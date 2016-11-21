@@ -31,7 +31,7 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 }
 
 func (r *Reader) ReadMeter() (n int, d time.Duration) {
-	r.RLock()
+	r.Lock()
 	defer r.Unlock()
 
 	d = time.Since(r.ts)
@@ -51,7 +51,7 @@ type Writer struct {
 
 // NewWriter returns a new Writer
 func NewWriter(wr io.Writer) *Writer {
-	w := new(Reader)
+	w := new(Writer)
 	return w
 }
 
@@ -64,7 +64,7 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 	return
 }
 
-func (w *Write) WriteMeter() (n int, d time.Duration) {
+func (w *Writer) WriteMeter() (n int, d time.Duration) {
 	w.Lock()
 	defer w.Unlock()
 
