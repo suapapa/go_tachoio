@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Reader implements tacho-meter for io.Reader object.
 type Reader struct {
 	ts  time.Time
 	cnt int
@@ -32,6 +33,7 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 	return
 }
 
+// ReadMeter returns read bytes and duration since last check
 func (r *Reader) ReadMeter() (n int, d time.Duration) {
 	r.Lock()
 	defer r.Unlock()
@@ -43,6 +45,7 @@ func (r *Reader) ReadMeter() (n int, d time.Duration) {
 	return
 }
 
+// Writer implements tacho-meter for io.Writer object.
 type Writer struct {
 	ts  time.Time
 	cnt int
@@ -69,6 +72,7 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 	return
 }
 
+// WriteMeter returns written bytes and duration since last check
 func (w *Writer) WriteMeter() (n int, d time.Duration) {
 	w.Lock()
 	defer w.Unlock()
