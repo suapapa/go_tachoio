@@ -16,9 +16,11 @@ type Reader struct {
 
 // NewReader retrurs a new Reader
 func NewReader(rd io.Reader) *Reader {
-	r := new(Reader)
-	r.ts = time.Now()
-	return r
+	r := Reader{
+		rd: rd,
+		ts: time.Now(),
+	}
+	return &r
 }
 
 func (r *Reader) Read(p []byte) (n int, err error) {
@@ -51,8 +53,11 @@ type Writer struct {
 
 // NewWriter returns a new Writer
 func NewWriter(wr io.Writer) *Writer {
-	w := new(Writer)
-	return w
+	w := Writer{
+		wr: wr,
+		ts: time.Now(),
+	}
+	return &w
 }
 
 func (w *Writer) Write(p []byte) (n int, err error) {
