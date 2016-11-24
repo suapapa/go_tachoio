@@ -1,7 +1,9 @@
 package tachoio
 
 import (
+	"fmt"
 	"io"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -12,7 +14,7 @@ type Reader struct {
 	cnt int
 	rd  io.Reader
 
-	sync.Mutex
+	sync.RWMutex
 }
 
 // NewReader retrurs a new Reader
@@ -30,6 +32,8 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 
 	n, err = r.rd.Read(p)
 	r.cnt += n
+
+	runtime.Gosched()
 	return
 }
 
@@ -45,13 +49,21 @@ func (r *Reader) ReadMeter() (n int, d time.Duration) {
 	return
 }
 
+func (r *Reader) String() string {
+	r.RLock()
+	defer r.RUnlock()
+
+	return fmt.Sprintf("tachoio.Reader(transpered %d bytes in %s)",
+		r.cnt, time.Since(r.ts))
+}
+
 // Writer implements tacho-meter for io.Writer object.
 type Writer struct {
 	ts  time.Time
 	cnt int
 	wr  io.Writer
 
-	sync.Mutex
+	sync.RWMutex
 }
 
 // NewWriter returns a new Writer
@@ -69,6 +81,8 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 
 	n, err = w.wr.Write(p)
 	w.cnt += n
+
+	runtime.Gosched()
 	return
 }
 
@@ -82,4 +96,12 @@ func (w *Writer) WriteMeter() (n int, d time.Duration) {
 	n = w.cnt
 	w.cnt = 0
 	return
+}
+
+func (w *Writer) String() string {
+	w.RLock()
+	defer w.RUnlock()
+
+	return fmt.Sprintf("tachoio.Writer(transpered %d bytes in %s)",
+		w.cnt, time.Since(w.ts))
 }
