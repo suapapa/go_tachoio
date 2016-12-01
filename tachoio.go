@@ -5,6 +5,7 @@
 package tachoio // import "github.com/suapapa/go_tachoio"
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"runtime"
@@ -24,7 +25,7 @@ type Reader struct {
 // NewReader retrurs a new Reader
 func NewReader(rd io.Reader) *Reader {
 	r := Reader{
-		rd: rd,
+		rd: bufio.NewReader(rd),
 		ts: time.Now(),
 	}
 	return &r
@@ -73,7 +74,7 @@ type Writer struct {
 // NewWriter returns a new Writer
 func NewWriter(wr io.Writer) *Writer {
 	w := Writer{
-		wr: wr,
+		wr: bufio.NewWriter(wr),
 		ts: time.Now(),
 	}
 	return &w
