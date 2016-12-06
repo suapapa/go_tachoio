@@ -46,3 +46,9 @@ func BenchmarkTachoRandReaderTachoDiscardWriter(b *testing.B) {
 		io.CopyN(tachoio.NewWriter(ioutil.Discard), tachoio.NewReader(rand.Reader), 256*1024)
 	}
 }
+
+func BenchmarkTachoNoopReadTachoDiscardWriter(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		io.CopyN(tachoio.NewWriter(ioutil.Discard), tachoio.NewReader(&tachoio.NoopRead{}), 256*1024)
+	}
+}

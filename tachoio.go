@@ -110,3 +110,11 @@ func (w *Writer) String() string {
 	return fmt.Sprintf("tachoio.Writer(transpered %d bytes in %s)",
 		w.cnt, time.Since(w.ts))
 }
+
+// NoopRead does nothing when read from it
+type NoopRead struct{}
+
+// Read returns input buffers length and nil error
+func (n *NoopRead) Read(p []byte) (int, error) {
+	return len(p), nil
+}
