@@ -5,7 +5,6 @@
 package tachoio // import "github.com/suapapa/go_tachoio"
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"runtime"
@@ -15,28 +14,26 @@ import (
 
 // Reader implements tacho-meter for io.Reader object.
 type Reader struct {
-	ts  time.Time
-	cnt int
-	rd  io.Reader
+	d  time.Duration
+	n  int
+	rd io.Reader
 
 	sync.RWMutex
 }
 
 // NewReader retrurs a new Reader
 func NewReader(rd io.Reader) *Reader {
-	r := Reader{
-		rd: bufio.NewReader(rd),
-		ts: time.Now(),
-	}
-	return &r
+	return &Reader{rd: rd}
 }
 
 func (r *Reader) Read(p []byte) (n int, err error) {
 	r.Lock()
 	defer r.Unlock()
 
+	start := time.Now()
 	n, err = r.rd.Read(p)
-	r.cnt += n
+	r.n += n
+	r.d += time.Since(start)
 
 	runtime.Gosched()
 	return
@@ -47,10 +44,10 @@ func (r *Reader) ReadMeter() (n int, d time.Duration) {
 	r.Lock()
 	defer r.Unlock()
 
-	d = time.Since(r.ts)
-	r.ts = time.Now()
-	n = r.cnt
-	r.cnt = 0
+	d = r.d
+	n = r.n
+	r.n = 0
+	r.d = 0
 	return
 }
 
@@ -58,34 +55,31 @@ func (r *Reader) String() string {
 	r.RLock()
 	defer r.RUnlock()
 
-	return fmt.Sprintf("tachoio.Reader(transpered %d bytes in %s)",
-		r.cnt, time.Since(r.ts))
+	return fmt.Sprintf("tachoio.Reader(n: %d, d: %v)", r.n, r.d)
 }
 
 // Writer implements tacho-meter for io.Writer object.
 type Writer struct {
-	ts  time.Time
-	cnt int
-	wr  io.Writer
+	d  time.Duration
+	n  int
+	wr io.Writer
 
 	sync.RWMutex
 }
 
 // NewWriter returns a new Writer
 func NewWriter(wr io.Writer) *Writer {
-	w := Writer{
-		wr: bufio.NewWriter(wr),
-		ts: time.Now(),
-	}
-	return &w
+	return &Writer{wr: wr}
 }
 
 func (w *Writer) Write(p []byte) (n int, err error) {
 	w.Lock()
 	defer w.Unlock()
 
+	start := time.Now()
 	n, err = w.wr.Write(p)
-	w.cnt += n
+	w.d += time.Since(start)
+	w.n += n
 
 	runtime.Gosched()
 	return
@@ -96,10 +90,10 @@ func (w *Writer) WriteMeter() (n int, d time.Duration) {
 	w.Lock()
 	defer w.Unlock()
 
-	d = time.Since(w.ts)
-	w.ts = time.Now()
-	n = w.cnt
-	w.cnt = 0
+	n = w.n
+	d = w.d
+	w.n = 0
+	w.d = 0
 	return
 }
 
@@ -107,14 +101,5 @@ func (w *Writer) String() string {
 	w.RLock()
 	defer w.RUnlock()
 
-	return fmt.Sprintf("tachoio.Writer(transpered %d bytes in %s)",
-		w.cnt, time.Since(w.ts))
-}
-
-// NoopRead does nothing when read from it
-type NoopRead struct{}
-
-// Read returns input buffers length and nil error
-func (n *NoopRead) Read(p []byte) (int, error) {
-	return len(p), nil
+	return fmt.Sprintf("tachoio.Writer(n: %d, d: %v)", w.n, w.d)
 }
