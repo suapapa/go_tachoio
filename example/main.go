@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,7 +15,8 @@ import (
 )
 
 func main() {
-	in := tachoio.NewReader(rand.Reader)
+	// in := tachoio.NewReader(rand.Reader)
+	in := tachoio.NewReader(tachoio.NoopReader)
 	out := tachoio.NewWriter(ioutil.Discard)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -48,6 +48,11 @@ copyLoop:
 			break copyLoop
 		}
 	}
+
+	if err := ctx.Err(); err != context.DeadlineExceeded {
+		panic(err)
+	}
+
 	log.Println(in)
 	log.Println(out)
 	log.Println("All done")
